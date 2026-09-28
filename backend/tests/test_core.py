@@ -321,9 +321,11 @@ def test_index_reloads_after_same_size_deployment(settings, tmp_path, monkeypatc
         os.utime(index, (1540000000, 1540000000))
         for route in ("/", "/index.html"):
             response = client.get(route, headers={
-                "If-None-Match": old.headers["etag"],
-                "If-Modified-Since": old.headers["last-modified"],
+                "If-None-Match": '"dd7b4e257ec5156c147541bf3c30d8aa"',
+                "If-Modified-Since": "Sat, 20 Oct 2018 01:46:40 GMT",
             })
             assert response.status_code == 200
             assert response.headers["cache-control"] == "no-store"
+            assert "etag" not in response.headers
+            assert "last-modified" not in response.headers
             assert "/assets/new.js" in response.text
