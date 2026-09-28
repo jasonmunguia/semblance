@@ -49,14 +49,18 @@ def check_recipient(destination: str, references: list[dict], coverage_note: str
             "coverage_note": coverage_note, "action": actions[status]}
 
 
-def lookalike_alert(candidate: str, reference: str) -> dict | None:
+def lookalike_alert(candidate: str, reference: str, *, direction="incoming", reference_kind="previous_recipient") -> dict | None:
     comparison = compare_addresses(candidate, reference)
     if not comparison["lookalike"]:
         return None
-    return {"kind": "lookalike", "severity": "warning", "title": "Possible lookalike address",
-            "explanation": "An incoming sender resembles an address this wallet previously sent funds to. This pattern can be used to poison transaction history; resemblance alone does not prove an attack.",
-            "action": "Do not copy this sender from transaction history. Verify the full recipient address independently.",
-            "evidence": {"candidate": candidate, "reference": reference, "reference_kind": "previous_recipient",
+    outgoing = direction == "outgoing_token_event"
+    return {"kind": "lookalike", "severity": "warning",
+            "title": "Possible token-history poisoning" if outgoing else "Possible lookalike address",
+            "explanation": ("A zero-value token event lists this wallet as sender and a recipient resembling an earlier payment recipient. Token events do not prove you initiated a payment; someone else can create a misleading history entry. Resemblance alone does not prove an attack." if outgoing else
+                            "An incoming sender resembles an earlier payment recipient. This pattern can be used to poison transaction history; resemblance alone does not prove an attack."),
+            "action": "Do not copy this address from transaction history. Verify the full recipient address independently.",
+            "evidence": {"candidate": candidate, "reference": reference, "reference_kind": reference_kind,
+                         "direction": direction,
                          **{k: v for k, v in comparison.items() if k not in ("exact", "lookalike")}}}
 
 

@@ -1,6 +1,6 @@
 # Semblance: system design
 
-Status: implementation and public Vercel site deployed; live data reads verified; scheduler activation is tracked in RELEASE.md. No measured detection-accuracy claim is made.
+Release and deployment verification are tracked in RELEASE.md. This document describes implementation behavior; it makes no measured detection-accuracy claim.
 
 ## Product and boundary
 
@@ -47,9 +47,17 @@ Read the next bounded block range, get transfers and approvals, evaluate, and co
 
 Default limits: 3 watches per browser, 3 unique wallets globally for the free pilot, 300-second target interval, up to 300 blocks per scan per wallet, 3 history pages per direction. Retain at most 10,000 transfers and 1,000 alerts per wallet; mark history partial when truncated. Each hosted pass has a 45-second budget divided among wallets so one slow wallet cannot starve the rest. These are configurable cost/abuse limits, not scale claims. An outage can produce a backlog; show the last checked time and catch-up state. Real data usage must be measured before changing limits. Only free plans are authorized. Service quotas can pause operation; these are not unlimited-capacity or uptime guarantees. At a steady two-second block interval, three wallets checked every five minutes use roughly 29.5 million Alchemy compute units per 30 days before history loads/retries; this is a planning estimate, not measured usage. Reduce capacity/cadence or batch owner-log queries before quota pressure. Neon compute quotas also need monitoring; free hosting is a bounded pilot.
 
+Direct-token proof enrichment is optional and bounded separately: at most 12 candidate records per wallet pass, four concurrent verification jobs, and a three-second total enrichment budget. Newer candidates are checked first. Completed proof outcomes persist; unavailable or unfinished checks remain retryable. A proof backlog does not block ordinary collection, but can delay token-derived references and their warnings. The usage estimate above excludes these extra transaction/receipt reads.
+
+Existing stored transfers are enriched in place without resetting the cursor or requiring a database-column migration. When a token recipient is newly verified, retained incoming and outgoing zero-value events are checked against that recipient within the wallet's monitoring coverage. Previously collected outgoing zero-value events also receive a full review against existing references, capped at 100 old events per wallet pass; `lookalike_review_version: 2` records that review. These rechecks still require the reference to precede the event and retain alert deduplication. They cannot recover activity already pruned by the 10,000-transfer retention limit or before monitoring coverage began.
+
 ## Detection semantics
 
-**Lookalike:** normalize the 20-byte address, validate mixed-case checksums, exclude exact matches. Flag a distinct address sharing at least 4 leading and 4 trailing hex characters with a reference, or differing in at most 2 positions. This is a transparent heuristic (a defined approximation), not a trained model. Case differences alone do not create warnings. Highlight differing character positions. Use only user-marked contacts or previous positive outgoing native-transfer recipients as references, never arbitrary inbound addresses. For monitoring, require a reference transaction earlier than the incoming event to avoid using future information.
+**Lookalike:** normalize the 20-byte address, validate mixed-case checksums, exclude exact matches. Flag a distinct address sharing at least 4 leading and 4 trailing hex characters with a reference, or differing in at most 2 positions. This is a transparent heuristic (a defined approximation), not a trained model. Case differences alone do not create warnings. Highlight differing character positions. The recipient-check tool uses explicit references, user-marked contacts, and prior positive native or verified direct-token payments. Monitoring uses those prior payment relationships, never arbitrary inbound addresses.
+
+**Direct-token reference proof:** require a positive outgoing ERC-20 record and independently fetch its transaction and receipt. The transaction sender must be the watched wallet, its destination must be the same token contract, and its calldata (encoded call instructions) must be exactly a canonical `transfer(address,uint256)` call with the recorded recipient and positive raw amount. A successful receipt must contain an unremoved Transfer event from that token with the same sender, recipient, and amount. Transaction hashes, block numbers, and block hashes must agree across the transaction, receipt, and event. Missing or inconsistent evidence cannot establish a reference. Routed transfers and smart-wallet token calls are intentionally excluded, as their recipient intent needs different verification. A token label or a token-generated event alone is never proof, and a verified relationship never certifies a recipient as safe.
+
+**Monitoring candidates:** check the sender of incoming native/token transfers and the recipient of outgoing zero-value ERC-20 events. For either direction, require the reference payment to occur in an earlier block; same-block references are excluded to avoid inventing transaction order. Outgoing token events can be fabricated or triggered by another party, so their warnings explicitly say that the event does not prove the wallet owner initiated a payment. The alert retains its direction, token contract, event value, reference kind, and reference block. A reference index narrows comparisons without changing the lookalike rule.
 
 **Unlimited approval:** identify the exact maximum unsigned 256-bit allowance in a standard ERC-20 Approval event, re-read the allowance at that block, and create a review warning for the observed maximum event, distinguishing a confirmed maximum, a subsequently reduced allowance at block end, and an unavailable read. If the call fails, mark the observation unverified rather than silently reporting nothing. A subsequent zero/limited allowance is a different event; alerts retain the time-qualified evidence and are not presented as a complete current-permission inventory. Labels from token data are untrusted strings, rendered as text.
 
@@ -64,9 +72,9 @@ Vercel builds React static files and hosts FastAPI under one origin. Neon provid
 ## Verification and release gates
 
 - Unit tests: invalid/mixed-case addresses, exact matches, lookalikes, insufficient history, no hindsight, unlimited/limited/revoked grants.
-- Provider tests: pagination, HTTP and JSON-RPC errors, malformed responses, 10-block ranges, failed allowance reads, secret redaction.
+- Provider tests: pagination, HTTP and JSON-RPC errors, malformed responses, 10-block ranges, failed allowance reads, secret redaction, direct-token transaction/receipt/event agreement and forged-reference rejection.
 - API tests: cookie tampering, session isolation, trusted-contact deletion, bounds, disallowed origins, unavailable provider, demo/live separation.
-- Worker tests: duplicated polls, partial failure without cursor advancement, restart from cursor, block-hash mismatch recovery, stale state.
+- Worker tests: duplicated polls, partial failure without cursor advancement, restart from cursor, block-hash mismatch recovery, stale state, delayed token-proof rechecks and bounded review of previously stored zero-value events.
 - Browser tests: example replay, destination mismatch display, add/remove a watch, empty/error state, responsive layout.
 - Deployment gates: real keyed Alchemy read; deployed database migration; one real worker cycle; restart persistence; HTTPS cookie round trip; host/provider spending limits agreed. Local tests do not satisfy these gates.
 
@@ -74,7 +82,7 @@ Vercel builds React static files and hosts FastAPI under one origin. Neon provid
 
 Already authorized: local repository, code, dependencies, tests, docs and local preview. GitHub CLI and Vercel identity checks passed on 2026-09-27; Composio GitHub was not connected.
 
-Provisioned: Vercel Hobby project and Neon Free database. Alchemy Free app has Base Mainnet enabled and a server-side key; real history and recent-range reads succeeded. Remaining setup: Cloudflare Free account and deployment/verification of its scheduled trigger. No recurring charges are authorized. Secrets go into host settings or ignored local files. No wallet/private key is needed.
+Required services: Vercel Hobby, Neon Free, an Alchemy Free app with Base Mainnet enabled, and Cloudflare Workers Free for its scheduled trigger. Provisioning and release verification are recorded in RELEASE.md. No recurring charges are authorized. Secrets go into host settings or ignored local files. No wallet/private key is needed.
 
 ## Primary implementation references
 

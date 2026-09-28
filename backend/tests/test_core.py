@@ -60,6 +60,9 @@ class FakeProvider:
     async def safe_head(self):
         return self.head, await self.block_hash(self.head)
 
+    async def verify_token_reference(self, data, address):
+        return "not_direct_transfer"
+
     async def block_hash(self, number):
         return self.hashes.get(number, "0x" + format(number, "064x"))
 

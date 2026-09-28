@@ -10,8 +10,8 @@ Source: https://github.com/jasonmunguia/semblance
 - Vercel plan: Hobby. Neon resource: Free. Alchemy signup: Free; Base Mainnet enabled. Cloudflare Workers dashboard: Free ($0), current plan. No paid subscription or domain purchased.
 - Real Alchemy history and recent-range reads passed. These establish connectivity, not detection accuracy.
 - Hosted live collector returned HTTP 200, processed one test wallet, persisted its cursor and displayed stored transfers with `monitoring` status.
-- `uv run pytest -q`: 49 passed, exit 0.
-- `npm --prefix frontend test`: 9 passed, exit 0.
+- `uv run pytest -q`: 91 passed, exit 0.
+- `npm --prefix frontend test`: 10 passed, exit 0.
 - `npm --prefix frontend run build`: exit 0.
 - `node --test scheduler/worker.test.mjs`: 2 passed, exit 0.
 - Scoped quality ratchet, Ruff, diff whitespace and staged secret checks: exit 0.
@@ -35,4 +35,8 @@ No precision/recall, latency guarantee, user adoption or prevented-loss metric i
 
 ## Historical detection validation
 
-See [the reproducible real-Base case study](../evaluation/README.md). Two explorer-labeled poisoning cases triggered collector alerts and pre-send warnings; real unlimited, finite, and zero USDC approvals behaved as expected. An outgoing zero-value lookalike event exposed an incoming-only monitoring coverage gap. This is not a representative accuracy benchmark, and no confirmed malicious approval was validated.
+See [the reproducible real-Base case study](../evaluation/README.md). Two explorer-labeled poisoning cases triggered collector alerts and pre-send warnings; real unlimited, finite, and zero USDC approvals behaved as expected. The previously missed outgoing zero-value lookalike event now triggers an alert using an independently verified earlier direct token transfer as its reference. The saved before/after results document the change. Forged token events are excluded from recipient references; delayed verification rechecks retained events. Router and smart-wallet token sends remain outside reference verification. This is not a representative accuracy benchmark, and no confirmed malicious approval was validated.
+
+## Coverage upgrade
+
+Local checks passed for the token-reference and outgoing-zero-event upgrade. Production rollout and hosted verification are pending.

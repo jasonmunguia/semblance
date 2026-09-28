@@ -10,10 +10,13 @@ from typing import Any
 
 import httpx
 
+from .references import VERIFIED_TOKEN, positive
+
 
 BASE_CHAIN_ID = 8453
 MAX_UINT256 = 2**256 - 1
 APPROVAL_TOPIC = "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 ADDRESS_RE = re.compile(r"^0x[0-9a-fA-F]{40}$")
 HASH_RE = re.compile(r"^0x[0-9a-fA-F]{64}$")
 
@@ -34,6 +37,7 @@ class TransferRecord:
     asset: str
     category: str
     token_address: str | None = None
+    raw_value: str | None = None
 
 
 @dataclass(frozen=True)
@@ -212,7 +216,54 @@ class BaseProvider:
             asset=asset,
             category=category,
             token_address=token_address,
+            raw_value=str(raw_value),
         )
+
+    async def verify_token_reference(self, data: dict, wallet: str) -> str:
+        """Prove direct recipient intent independently of indexer/token-reported history.
+
+        Receipts and calldata must agree. This does not certify the token or
+        recipient, and deliberately excludes routers and smart-wallet calls.
+        """
+        if (data["category"] != "erc20" or data["from_address"] != wallet
+                or data["to_address"] == wallet or not positive(data["value"])):
+            return "not_direct_transfer"
+        try:
+            tx_hash = _hash(data["tx_hash"])
+            tx, receipt = await asyncio.gather(
+                self._rpc("eth_getTransactionByHash", [tx_hash]),
+                self._rpc("eth_getTransactionReceipt", [tx_hash]),
+            )
+            if not isinstance(tx, dict) or not isinstance(receipt, dict):
+                return "unavailable"
+            if (tx.get("hash") != tx_hash or receipt.get("transactionHash") != tx_hash
+                    or _hex_int(tx.get("blockNumber")) != data["block"]
+                    or receipt.get("blockNumber") != tx.get("blockNumber")
+                    or _hash(tx.get("blockHash")) != _hash(receipt.get("blockHash"))):
+                return "unavailable"
+            if (receipt.get("status") != "0x1" or tx.get("from", "").lower() != wallet
+                    or tx.get("to", "").lower() != data.get("token_address")):
+                return "not_direct_transfer"
+            encoded = tx.get("input", "").lower()
+            # transfer(address,uint256), exactly two canonical ABI words.
+            if not re.fullmatch(r"0xa9059cbb0{24}[0-9a-f]{40}[0-9a-f]{64}", encoded):
+                return "not_direct_transfer"
+            recipient, amount = "0x" + encoded[34:74], int(encoded[74:], 16)
+            if recipient != data["to_address"] or amount == 0:
+                return "not_direct_transfer"
+            if data.get("raw_value") is not None and str(amount) != data["raw_value"]:
+                return "not_direct_transfer"
+            expected = [TRANSFER_TOPIC, _topic_address(wallet), _topic_address(recipient)]
+            for log in receipt.get("logs", []):
+                if (log.get("removed") is not True and log.get("address") == data.get("token_address")
+                        and log.get("topics") == expected and _hex_int(log.get("data")) == amount
+                        and log.get("transactionHash") == tx_hash
+                        and log.get("blockNumber") == tx.get("blockNumber")
+                        and log.get("blockHash") == tx.get("blockHash")):
+                    return VERIFIED_TOKEN
+            return "not_direct_transfer"
+        except (ProviderError, ValueError, TypeError, AttributeError):
+            return "unavailable"
 
     async def _transfers(
         self, address: str, start: int, end: int, *, page_limit: int | None, order: str

@@ -7,11 +7,11 @@ BaseScan labels as involved in address poisoning. A real unlimited USDC approval
 triggered an exposure warning; real finite and zero approvals did not. This is a
 small, deliberately selected case study, **not a measured scam-detection accuracy rate**.
 
-An additional real outgoing zero-value token event produced no alert. It falls
-outside two coverage boundaries: outgoing lookalike recipients are not checked,
-and its earlier token-payment recipient is not an eligible native-ETH reference.
-Its maliciousness is not independently labeled, so it is not counted as a
-confirmed missed attack.
+The previously missed outgoing zero-value token event now triggers a warning.
+Its earlier USDC payment was independently verified using the signed transaction,
+call arguments, and successful receipt before its recipient became a reference.
+The suspicious event is not independently labeled malicious, so it remains a
+coverage regression case, not an additional confirmed attack.
 
 ## Reproduce
 
@@ -28,8 +28,8 @@ mutations are used.
 The two poisoning cases run the unmodified production `scan_monitor` function
 against live historical Base data and an isolated local database. Only the head
 block is pinned and the scan narrowed to one block to isolate each case. History
-is fetched as of that historical head; only earlier positive native transfers
-can establish recipient references. This verifies historical detection and
+is fetched as of that historical head. Only earlier positive native transfers or
+independently verified direct token payments can establish recipient references. This verifies historical detection and
 persistence, not five-minute scheduling, throughput, alert timing, or prevention
 of a real loss. Approval cases exercise the production provider and alert rule.
 
@@ -42,7 +42,7 @@ of a real loss. Approval cases exercise the production provider and alert rule.
 | [Unlimited USDC approval to 0x Allowance Holder](https://basescan.org/tx/0xc59b414c60c3dd75af774174460652eb66e08c90da52e00990a4d7ffefd49fc3) | Warn about unlimited exposure, without asserting fraud | Warning; maximum allowance independently read at the historical block |
 | [Finite USDC approval](https://basescan.org/tx/0x7d6a80b836b63e2b740720d631f7a20233b380842b08bfc84185a8fd208c7f92) | No unlimited-approval warning | No warning |
 | [Zero USDC allowance](https://basescan.org/tx/0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411) | No unlimited-approval warning | No warning |
-| [Outgoing zero-USDC/lookalike token events](https://basescan.org/tx/0x5a9e9c1e9de7e265c6ba561867657e2e23a7026ebe9f4516b30b4e3737b7acdb) | Coverage probe; no independent malicious label | No alert; outgoing lookalike recipients are outside the current monitor rule |
+| [Outgoing zero-USDC/lookalike token events](https://basescan.org/tx/0x5a9e9c1e9de7e265c6ba561867657e2e23a7026ebe9f4516b30b4e3737b7acdb) | Coverage probe; no independent malicious label | Now warns, using the earlier independently verified USDC payment as reference |
 
 Each poisoning case also checked the actual reference address itself (`exact_match`)
 and a different real address (`no_match`). These are address-comparison controls,
@@ -65,16 +65,26 @@ not a representative sample of benign transactions.
   transaction sender. The coverage probe is suspicious by resemblance and event
   shape, but we did not obtain an independent malicious classification. No matching
   prior native reference was present in the fetched history; the earlier USDC
-  payment is recorded separately in `results.json`. Thus this single observation
-  cannot isolate the effect of incoming-only matching from native-only references.
-- Native-only references miss relationships established exclusively through token
-  payments. Incoming-only matching misses outgoing lookalike event recipients.
+  payment is recorded separately in `results.json`, with its direct-payment proof.
+  The unchanged on-chain event now generates an outgoing-token-event warning.
+- Token recipient proofs deliberately exclude routed and smart-wallet calls. Proof
+  attempts are bounded per pass; failed reads never establish a reference. Later
+  successful proofs cause relevant retained events to be reviewed again.
 - No representative benign sample or held-out attack corpus was evaluated. Do not
   claim a false-positive rate, recall, precision, or prevented-loss metric.
 
-## Recommended next work
+## Regression evidence and remaining work
 
-Extend detection to outgoing zero-value token events with careful wording that
-does not imply the wallet owner initiated a transfer. Add verified token-payment
-references without trusting arbitrary token logs. Then evaluate a larger,
-independently labeled dataset with unrelated campaigns and ordinary activity.
+`results-before-coverage-fix.json` preserves the original no-alert result;
+`results.json` records the upgraded detector run on the same historical events.
+The script now asserts that the previously missed case produces an alert and
+that its USDC reference carries an independent direct-payment proof.
+
+Automated negative tests separately reject forged sender events, failed receipts,
+mismatched amounts/contracts/blocks, and malformed call arguments. Tests also
+cover delayed-proof recovery, existing stored records, deduplication, bounded
+backfill, and a lossless address-similarity prefilter. These adversarial tests
+are synthetic; they are not additional labeled real-world attacks.
+
+A larger independently labeled dataset with unrelated campaigns and ordinary
+activity remains necessary before claiming population-level detection accuracy.

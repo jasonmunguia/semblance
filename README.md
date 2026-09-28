@@ -6,8 +6,8 @@ Semblance is a read-only wallet-security pilot for Base. Compare a destination a
 
 ## Try it
 
-- **Check:** compare a pasted recipient with a manually entered reference, your saved contacts, or prior positive native-transfer recipients.
-- **Monitor:** watch public Base addresses, inspect alerts, and mark them reviewed. Watchlists belong to an anonymous browser session; clearing its cookie loses access to that session.
+- **Check:** compare a pasted recipient with a manually entered reference, your saved contacts, or prior native-payment and verified direct-token-payment recipients.
+- **Monitor:** watch public Base addresses for incoming lookalikes, misleading outgoing zero-value token records, and unlimited token approvals. Inspect alerts and mark them reviewed. Watchlists belong to an anonymous browser session; clearing its cookie loses access to that session.
 - **Replay:** step through a clearly labeled simulated incident. Example data never counts as live detection or evaluation performance.
 
 No wallet connection, private key, signature, or money movement is required. Semblance cannot block transactions or revoke permissions. Exact address matches and absent warnings are not safety certificates.
@@ -54,7 +54,11 @@ Vercel Hobby's built-in daily cron is too infrequent for this collector. GitHub 
 
 Address comparison uses normalized full addresses and validates mixed-case checksums. A different address is flagged when its first and last four hexadecimal characters match a reference, or at most two characters differ. This is an explainable heuristic, not an exhaustive attack classifier.
 
-Automatic reference history uses **positive outgoing native transfers only**. Incoming addresses are never promoted to trusted contacts, and token events are not treated as proof of a recipient relationship: a token contract can emit misleading events. Alerts can examine incoming native/token transfers. Same-block outgoing references are conservatively excluded because block order alone does not prove event order.
+Automatic reference history uses **positive outgoing native payments and independently verified direct token payments**. A token event alone is insufficient: the wallet must have originated a direct call to that token, the encoded recipient and amount must match, and a successful receipt must contain the matching transfer event with consistent transaction and block identifiers. This proves a narrowly defined payment relationship, not the recipient's safety. Router-mediated and smart-wallet token calls are excluded; arbitrary incoming addresses and unverified token events never become references.
+
+Monitoring compares incoming native/token senders and recipients in outgoing **zero-value ERC-20 events** with earlier payment references. A token event listing the wallet as sender does not prove its owner initiated a transaction. Same-block references are conservatively excluded because block order alone does not prove event order.
+
+Token proof checks process at most 12 records per wallet pass, with four concurrent verification jobs and a three-second optional budget. Unfinished or temporarily unavailable proofs remain retryable while collection continues. Stored history is upgraded without resetting progress; newly verified references trigger a recheck of retained events within monitoring coverage. Previously stored outgoing zero-value events are reviewed in batches of up to 100 per pass and marked with a review version. Retention remains bounded at 10,000 transfers per wallet, so this is not a complete historical audit.
 
 Approval alerts inspect new ERC-20 `Approval` events from the displayed monitoring-start block. A maximum allowance is checked against the token contract at that block. The UI distinguishes confirmed maximum, reduced allowance, and unavailable reads. This is an observation at block end, not a current complete permission audit or proof the spender is malicious. NFT approvals and internal contract movements are excluded.
 
@@ -67,6 +71,6 @@ npm --prefix frontend test
 npm --prefix frontend run build
 ```
 
-Tests cover malformed provider data, exact numeric scaling, pagination, bounded RPC log queries, failed reads, private session ownership, forged/zero/future reference exclusions, deduplication, and chain reorganization recovery. All provider tests use synthetic fixtures; they do not establish real-world detection accuracy.
+Tests cover malformed provider data, exact numeric scaling, pagination, bounded RPC log queries, failed reads, private session ownership, forged/zero/future reference exclusions, direct-token proof requirements, delayed-proof rechecks, deduplication, and chain reorganization recovery. Automated provider fixtures do not establish real-world detection accuracy. Historical checks and their limits are documented separately in [evaluation](evaluation/README.md).
 
 See [architecture](docs/ARCHITECTURE.md), [API contract](docs/API.md), and [implementation plan](docs/IMPLEMENTATION_PLAN.md) for details.

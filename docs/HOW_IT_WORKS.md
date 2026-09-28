@@ -4,8 +4,8 @@ Semblance answers two questions: **“Does this recipient look like an impersona
 
 ## What someone can do
 
-1. **Check before sending.** Paste the destination and compare it with a known address, a saved contact, or prior native-currency recipients. Semblance highlights exactly which characters differ. It warns about lookalikes without treating an exact match as proof the recipient is safe.
-2. **Monitor.** Add a public wallet address. Semblance retrieves activity and looks for a sender impersonating a prior recipient, or a token permission allowing unusually broad spending. Every warning has evidence and a suggested next action.
+1. **Check before sending.** Paste the destination and compare it with a known address, a saved contact, or prior payment recipients. Semblance highlights exactly which characters differ. It warns about lookalikes without treating an exact match as proof the recipient is safe.
+2. **Monitor.** Add a public wallet address. Semblance looks for incoming lookalikes, misleading zero-value token entries that appear to go out of the wallet, and token permissions allowing unusually broad spending. Every warning has evidence and a suggested next action.
 3. **Replay.** Step through a simulated incident showing how the pattern develops. Recruiters can inspect the product without owning crypto or connecting a wallet.
 
 ## How the pieces fit together
@@ -35,7 +35,11 @@ flowchart TD
 
 ## What detection actually means
 
-**Lookalike addresses:** an attacker may use an address with the same beginning and ending as someone you recognize. The rule compares the whole address and highlights differences. Monitoring only uses earlier positive native transfers to establish recipient history, so random inbound activity and token-generated events cannot silently become trusted references.
+**Lookalike addresses:** an attacker may use an address with the same beginning and ending as someone you recognize. The rule compares the whole address and highlights differences. Recipient history includes earlier positive ETH payments and direct token payments that pass an extra check: the wallet's actual transaction instructions and successful transaction receipt must agree on the token, recipient, and amount. A token's claim that money moved is not enough. Payments through routing services or smart wallets are excluded from these token references.
+
+**Misleading history entries:** a token can record a zero-value “outgoing transfer” without the wallet owner choosing to send anything. Semblance checks whether that listed recipient resembles someone previously paid and warns against copying it. The warning describes the evidence; it does not claim the owner made the payment or that resemblance proves an attack.
+
+The extra token checks happen in small batches, so references and warnings can appear later. When a payment is verified later, Semblance rechecks relevant saved activity from the monitoring period. It also revisits older saved zero-value entries as the new rule is applied. It keeps at most 10,000 transfers per wallet; activity outside that saved window is not a complete history audit.
 
 **Unlimited approvals:** a token approval gives a contract permission to spend that token from a wallet. Maximum approval can be intentional, but creates exposure worth reviewing. Semblance checks what the token contract reported at the observed block and shows whether that read confirmed maximum permission, a lower permission, or failed. It does not label every permission a scam or claim it is still active now.
 

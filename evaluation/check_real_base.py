@@ -146,10 +146,14 @@ async def main():
             "earlier_native_reference": max(earlier, key=lambda t: t["block"]) if earlier else None,
             "earlier_token_reference": token_reference,
             "reference_transaction_sender": reference_tx["from"],
-            "limitation": "Two exclusions: outgoing token-event recipients are not checked, and no eligible prior native reference was present in fetched history",
+            "result": "Outgoing zero-value lookalike detected using an independently verified direct token-payment reference",
         }
         assert any(t["from_address"] == victim and t["value"] == "0" for t in events)
-        print("OBSERVED outgoing zero-value pattern alerts:", len(emitted), flush=True)
+        assert token_reference.get("recipient_verification") == "verified_direct_token_transfer"
+        assert reference_tx["from"] == victim
+        assert any(a["evidence"]["direction"] == "outgoing_token_event"
+                   and a["evidence"]["reference_kind"] == "verified_token_recipient" for a in emitted)
+        print("PASS previously missed outgoing zero-value pattern:", len(emitted), "alert", flush=True)
     finally:
         await provider.aclose()
     Path("evaluation/results.json").write_text(json.dumps(results, indent=2) + "\n")

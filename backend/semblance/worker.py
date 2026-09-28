@@ -5,7 +5,6 @@ import hashlib
 import logging
 import time
 from dataclasses import asdict
-from decimal import Decimal, InvalidOperation
 
 from sqlalchemy import delete, select, text
 
@@ -13,6 +12,7 @@ from .config import get_settings
 from .db import Alert, BrowserSession, Monitor, Transfer, Watch, database
 from .domain import approval_alert, lookalike_alert
 from .provider import BaseProvider, ProviderError
+from .references import ReferenceIndex, VERIFIED_TOKEN, positive, reference_kind, zero
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +21,37 @@ def event_key(address, event_id):
     return hashlib.sha256(f"{address}:{event_id}".encode()).hexdigest()
 
 
-def positive(value):
+async def verify_references(provider, address, candidates):
+    """Bound optional enrichment so unavailable proofs cannot halt core collection.
+
+    Persisted definitive rejections allow older records to progress on later
+    passes. Transient failures remain retryable. No unverified event is trusted.
+    """
+    selected, hashes = [], set()
+    for key, data in sorted(candidates.items(), key=lambda item: item[1]["block"], reverse=True):
+        if (data["category"] != "erc20" or data["from_address"] != address
+                or data["to_address"] == address or not positive(data["value"])
+                or data.get("recipient_verification") in (VERIFIED_TOKEN, "not_direct_transfer")):
+            continue
+        if data["tx_hash"] not in hashes and len(hashes) >= 12:
+            continue
+        # At most twelve records and twelve transactions per pass.
+        if len(selected) >= 12:
+            break
+        hashes.add(data["tx_hash"])
+        selected.append((key, data))
+    outcomes = {}
+    semaphore = asyncio.Semaphore(4)
+
+    async def verify(key, data):
+        async with semaphore:
+            outcomes[key] = await provider.verify_token_reference(data, address)
+
     try:
-        return Decimal(value) > 0
-    except (InvalidOperation, TypeError):
-        return False
+        await asyncio.wait_for(asyncio.gather(*(verify(key, data) for key, data in selected)), timeout=3)
+    except TimeoutError:
+        pass
+    return outcomes
 
 
 def persist_transfers(db, address, transfers):
@@ -47,12 +73,16 @@ async def scan_monitor(factory, provider, address, settings):
         if monitor is None:
             return
         cursor, cursor_hash = monitor.cursor, monitor.cursor_hash
+        candidates = {t.id: {**t.data, "block": t.block}
+                      for t in db.scalars(select(Transfer).where(Transfer.address == address))}
     # Canonical hash mismatch: rebuild history and alerts rather than retain orphan evidence.
     reset = cursor is not None and (cursor > head or await provider.block_hash(cursor) != cursor_hash)
     history = None
     initialize = cursor is None or reset
     if initialize:
         cursor = max(0, head - settings.scan_blocks)
+    if reset:
+        candidates = {}
     end = min(head, cursor + settings.scan_blocks)
     expected_end_hash = head_hash if end == head else await provider.block_hash(end)
     if initialize:
@@ -62,6 +92,10 @@ async def scan_monitor(factory, provider, address, settings):
     else:
         from .provider import ScanResult
         result = ScanResult([], [])
+    for item in (history.transfers if history is not None else []) + result.transfers:
+        key = event_key(address, item.event_id)
+        candidates.setdefault(key, asdict(item))
+    proofs = await verify_references(provider, address, candidates)
     end_hash = await provider.block_hash(end)
     if end_hash != expected_end_hash:
         raise ProviderError("Chain changed during collection; retry without advancing the cursor")
@@ -77,30 +111,75 @@ async def scan_monitor(factory, provider, address, settings):
             monitor.history_partial = history.partial
             monitor.coverage_start = cursor + 1
         persist_transfers(db, address, result.transfers)
+        for key, verification in proofs.items():
+            row = db.get(Transfer, key)
+            if row is not None:
+                row.data = {**row.data, "recipient_verification": verification}
+        db.flush()
         stored = db.scalars(select(Transfer).where(Transfer.address == address).order_by(Transfer.block)).all()
-        # Native transfers establish references; token contracts can emit forged Transfer events.
+        # Token references require independent evidence of direct recipient intent.
         earliest = {}
         for transfer in stored:
             t = transfer.data
-            if t["from_address"] == address and t["category"] == "external" and positive(t["value"]):
-                earliest.setdefault(t["to_address"], transfer.block)
-        references = [(block, recipient) for recipient, block in earliest.items()]
-        existing_alerts = set(db.scalars(select(Alert.id).where(Alert.address == address)))
-        for transfer in result.transfers:
-            if transfer.to_address != address or transfer.from_address == address:
+            kind = reference_kind(t, address)
+            if kind:
+                earliest.setdefault(t["to_address"], (transfer.block, kind))
+        references = [(block, recipient, kind) for recipient, (block, kind) in earliest.items()]
+        previous_alerts = db.scalars(select(Alert).where(Alert.address == address)).all()
+        existing_alerts = {a.id for a in previous_alerts}
+        observed_patterns = {
+            (a.data.get("tx_hash"), a.data.get("evidence", {}).get("candidate"),
+             a.data.get("evidence", {}).get("reference"),
+             a.data.get("evidence", {}).get("direction", "incoming"))
+            for a in previous_alerts if a.data.get("kind") == "lookalike"
+        }
+        current_ids = {event_key(address, t.event_id) for t in result.transfers}
+        newly_verified = {candidates[key]["to_address"] for key, value in proofs.items()
+                          if value == VERIFIED_TOKEN}
+        full_index = ReferenceIndex(references)
+        new_index = ReferenceIndex([ref for ref in references if ref[1] in newly_verified])
+        # A delayed proof must still recover retained events after monitoring began.
+        # Recheck outgoing zero events too, including records collected before this rule shipped.
+        coverage_start = monitor.coverage_start if monitor.coverage_start is not None else cursor + 1
+        migration_remaining = 100
+        for row in stored:
+            if row.block < coverage_start:
                 continue
-            for previous_block, reference in references:
-                if previous_block >= transfer.block:
+            t = row.data
+            if t["to_address"] == address and t["from_address"] != address:
+                candidate, direction = t["from_address"], "incoming"
+            elif (t["category"] == "erc20" and t["from_address"] == address
+                  and t["to_address"] != address and zero(t["value"])):
+                candidate, direction = t["to_address"], "outgoing_token_event"
+            else:
+                continue
+            full_review = row.id in current_ids
+            if (direction == "outgoing_token_event" and not full_review
+                    and t.get("lookalike_review_version") != 2 and migration_remaining):
+                full_review = True
+                migration_remaining -= 1
+            index = full_index if full_review else new_index
+            for previous_block, reference, kind in index.candidates(candidate):
+                if previous_block >= row.block:
                     continue
-                alert = lookalike_alert(transfer.from_address, reference)
+                pattern = (t["tx_hash"], candidate, reference, direction)
+                if pattern in observed_patterns:
+                    continue
+                alert = lookalike_alert(candidate, reference, direction=direction, reference_kind=kind)
                 if alert is None:
                     continue
-                key = event_key(address, transfer.event_id + ":lookalike:" + reference)
+                alert["evidence"].update({"reference_block": previous_block,
+                                          "token": t.get("token_address"),
+                                          "event_value": t["value"]})
+                key = event_key(address, row.id + ":lookalike:" + reference)
                 if key not in existing_alerts:
                     existing_alerts.add(key)
-                    db.add(Alert(id=key, address=address, block=transfer.block,
-                                 data={**alert, "tx_hash": transfer.tx_hash, "block": transfer.block,
-                                       "timestamp": transfer.timestamp}))
+                    observed_patterns.add(pattern)
+                    db.add(Alert(id=key, address=address, block=row.block,
+                                 data={**alert, "tx_hash": t["tx_hash"], "block": row.block,
+                                       "timestamp": t.get("timestamp")}))
+            if full_review and direction == "outgoing_token_event":
+                row.data = {**row.data, "lookalike_review_version": 2}
         for approval in result.approvals:
             alert = approval_alert(approval)
             key = event_key(address, approval.event_id + ":approval")

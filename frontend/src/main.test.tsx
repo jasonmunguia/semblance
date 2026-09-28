@@ -90,3 +90,16 @@ describe('example and monitoring guidance',()=>{
     expect(screen.getByText(/Delays and provider quotas may apply.*Pilot capacity: 3 wallets total/)).toBeTruthy();
   });
 });
+
+describe('updated detection coverage',()=>{
+  it('states direct-payment reference limits and does not imply a zero-value event was signed',async()=>{
+    vi.stubGlobal('fetch',vi.fn(async (input:string)=>json(input==='/api/state'?live:demo)));
+    render(<App/>);
+    fireEvent.click(await screen.findByRole('button',{name:'Live'}));
+    expect(await screen.findByText(/Monitored references use prior native payments and direct token payments only after a matching successful receipt/)).toBeTruthy();
+    expect(screen.getByText(/Routed and smart-wallet token payments are excluded; token verification runs in bounded passes/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:'Monitor'}));
+    expect(screen.getByText(/Lookalikes can appear as incoming senders or zero-value outgoing token events/)).toBeTruthy();
+    expect(screen.getByText(/An event alone does not prove the wallet signed a payment/)).toBeTruthy();
+  });
+});

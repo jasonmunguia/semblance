@@ -5,7 +5,6 @@ import uuid
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -20,13 +19,7 @@ from .config import Settings, get_settings
 from .db import Acknowledgement, Alert, BrowserSession, Contact, Monitor, Transfer, Watch, database
 from .demo import COVERAGE, RECIPIENT, example_state
 from .domain import check_recipient, normalize_address
-
-
-def positive_amount(value):
-    try:
-        return Decimal(value) > 0
-    except (InvalidOperation, TypeError):
-        return False
+from .references import reference_kind
 
 
 def iso(value):
@@ -261,9 +254,11 @@ def create_app(settings: Settings | None = None):
                     monitor = db.get(Monitor, watch.address)
                     for transfer in db.scalars(select(Transfer).where(Transfer.address == watch.address)):
                         t = transfer.data
-                        if t["from_address"] == watch.address and t["category"] == "external" and positive_amount(t["value"]):
-                            refs.append({"address": t["to_address"], "kind": "previous_recipient", "label": "Previous native-transfer recipient"})
-                    note = f"Historical comparisons use native-transfer recipients only. History status: {watch_data(watch, monitor)['status']}; " + ("partial. " if monitor.history_partial else "bounded coverage. ") + "A match does not establish safety."
+                        kind = reference_kind(t, watch.address)
+                        if kind:
+                            refs.append({"address": t["to_address"], "kind": kind,
+                                         "label": "Verified direct-token recipient" if kind == "verified_token_recipient" else "Previous native-transfer recipient"})
+                    note = f"References use native payments and verified direct token payments. Token verification is bounded; routed and smart-wallet payments are excluded. History status: {watch_data(watch, monitor)['status']}; " + ("partial. " if monitor.history_partial else "bounded coverage. ") + "A match does not establish safety."
         return check_recipient(destination, refs, note)
 
     static = Path(__file__).resolve().parents[2] / "frontend" / "dist"
