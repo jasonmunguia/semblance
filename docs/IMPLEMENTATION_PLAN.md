@@ -3,7 +3,6 @@
 Goal: build and verify the agreed read-only monitor and recipient checker, with clear separation between example and live data.
 Architecture: React frontend served by FastAPI, SQLAlchemy persistence, separate Python polling worker, Alchemy provider adapter. SQLite local / PostgreSQL hosted.
 Spec: `docs/ARCHITECTURE.md`; browser contract: `docs/API.md`.
-Execution: native lead implementation and review, scoped mechanical frontend/provider work delegated according to Jason's standing model-routing instruction. User has explicitly requested implementation; no additional design approval loop.
 
 ## Constraints and review focus
 - Never sign/send a transaction or collect wallet secrets.

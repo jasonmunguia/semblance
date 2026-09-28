@@ -1,10 +1,10 @@
 # Semblance: system design
 
-Status: implementation and public Vercel site deployed; live data reads verified; scheduler activation is tracked in RELEASE.md. Numbers from early resume drafts are not performance claims.
+Status: implementation and public Vercel site deployed; live data reads verified; scheduler activation is tracked in RELEASE.md. No measured detection-accuracy claim is made.
 
 ## Product and boundary
 
-Semblance helps people inspect Base wallet activity, check a recipient before sending, and understand warning evidence. It never signs transactions, holds keys, executes revocations, or promises that an address is safe. Ilan's Coinbase referral is the recruiting context, not a Coinbase endorsement. The two initial rules are lookalike-address detection and unlimited ERC-20 token permissions. Broader scam detection, NFTs, contracts auditing, and fund recovery are outside this release.
+Semblance helps people inspect Base wallet activity, check a recipient before sending, and understand warning evidence. It never signs transactions, holds keys, executes revocations, or promises that an address is safe. The two initial rules are lookalike-address detection and unlimited ERC-20 token permissions. Broader scam detection, NFTs, contracts auditing, and fund recovery are outside this release.
 
 ## The five pieces, in plain language
 

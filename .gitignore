@@ -17,3 +17,5 @@ frontend/dist/
 skills-lock.json
 
 !.env.example
+
+.wrangler/
