@@ -1,0 +1,13 @@
+.venv
+.git
+.agents
+.pytest_cache
+.ruff_cache
+**/__pycache__
+**/.npm-cache
+**/node_modules
+.env*
+*.db
+*.db-*
+backend/tests
+skills-lock.json

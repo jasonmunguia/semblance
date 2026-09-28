@@ -1,0 +1,12 @@
+name = "semblance-scheduler"
+main = "worker.js"
+compatibility_date = "2026-09-27"
+workers_dev = false
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+SEMBLANCE_URL = "https://semblance-omega.vercel.app"
+# Set COLLECTOR_SECRET with `wrangler secret put COLLECTOR_SECRET`.
+# It must match SEMBLANCE_COLLECTOR_SECRET on the Vercel project.

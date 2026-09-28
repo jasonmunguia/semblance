@@ -1,0 +1,27 @@
+[project]
+name = "semblance"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30,<1",
+    "httpx>=0.27,<1",
+    "sqlalchemy>=2.0,<3",
+    "eth-utils>=5,<6",
+    "itsdangerous>=2.2,<3",
+    "pydantic-settings>=2.5,<3",
+    "psycopg[binary]>=3.2,<4",
+    "eth-hash[pycryptodome]>=0.7,<1",
+]
+[dependency-groups]
+dev = ["pytest>=8,<9", "pytest-asyncio>=0.24,<1", "ruff>=0.9,<1"]
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+asyncio_mode = "auto"
+[tool.ruff]
+line-length = 110
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.vercel]
+entrypoint = "app:app"
