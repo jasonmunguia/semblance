@@ -40,4 +40,4 @@ Spec: `docs/ARCHITECTURE.md`; browser contract: `docs/API.md`.
 - [x] Document real-account/live-production gates separately from local test results. Free-only public site published; scheduler activation remains a release gate documented in RELEASE.md.
 
 ## Remaining release gate
-- [ ] Activate Cloudflare Free scheduled trigger and observe an unattended collector cycle.
+- [x] Activate Cloudflare Free scheduled trigger and observe an unattended collector cycle (verified 2026-09-28 04:41 UTC; see RELEASE.md).

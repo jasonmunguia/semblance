@@ -7,7 +7,7 @@ Source: https://github.com/jasonmunguia/semblance
 
 - Vercel production deploy returned READY. Site, health, example and private-state routes returned HTTP 200.
 - Hosted recipient comparison returned a lookalike warning for two addresses differing by one character.
-- Vercel plan: Hobby. Neon resource: Free. Alchemy signup: Free; Base Mainnet enabled. No paid subscription or domain purchased.
+- Vercel plan: Hobby. Neon resource: Free. Alchemy signup: Free; Base Mainnet enabled. Cloudflare Workers dashboard: Free ($0), current plan. No paid subscription or domain purchased.
 - Real Alchemy history and recent-range reads passed. These establish connectivity, not detection accuracy.
 - Hosted live collector returned HTTP 200, processed one test wallet, persisted its cursor and displayed stored transfers with `monitoring` status.
 - `uv run pytest -q`: 49 passed, exit 0.
@@ -19,12 +19,16 @@ Source: https://github.com/jasonmunguia/semblance
 - Desktop/mobile browser checks: no page errors or horizontal overflow; example recipient warning works in a real browser.
 - GitHub Checks run 36375451960: success.
 
-## Pending
+## Scheduled monitoring verified
 
-Cloudflare account exists; deployment tool authorization has not completed. The scheduler bundle passes a dry run, but its scheduled trigger has not been published and no unattended cycle has been observed. Background monitoring must not be described as operational until that gate is cleared.
+Cloudflare deployment authorization succeeded. `wrangler deploy` returned exit 0, publishing version `20cf929c-b02e-4366-ab3e-4c03e1566430` with schedule `*/5 * * * *`; the collector secret was installed successfully. The public Worker endpoint is disabled.
+
+An unattended cron invocation completed at 2026-09-28 04:41 UTC (September 27, 9:41 PM PDT). Cloudflare tail reported `outcome: ok`, `processed: 1`, `busy: false`, `budgetReached: false`, and no exceptions. A separate hosted-state read verified the temporary watch changed from `pending` to `monitoring`, with cursor 51890535, a stored check time, and 200 displayed transfers. The verification command returned exit 0. The temporary watch was then removed and empty state verified, restoring pilot capacity.
+
+The five-minute schedule is active. This verifies one real unattended cycle, not a continuous-availability or latency guarantee. New Cloudflare cron configurations can take up to 15 minutes to propagate ([official documentation](https://developers.cloudflare.com/workers/configuration/cron-triggers/)).
 
 ## Pilot limits
 
-Three unique monitored wallets across the installation, three per browser session. Five-minute target schedule after activation, with provider and safe-block delay. Free-tier quotas can pause operation. Anonymous sessions are browser-specific; clearing the cookie loses access. PostgreSQL transaction locks serialize collector work and quota changes, but full load/concurrency testing is not claimed. In-memory rate limiting is per process and must be replaced before wider deployment.
+Three unique monitored wallets across the installation, three per browser session. Five-minute target schedule, with provider and safe-block delay. Free-tier quotas can pause operation. Anonymous sessions are browser-specific; clearing the cookie loses access. PostgreSQL transaction locks serialize collector work and quota changes, but full load/concurrency testing is not claimed. In-memory rate limiting is per process and must be replaced before wider deployment.
 
 No precision/recall, latency guarantee, user adoption or prevented-loss metric is claimed. Incident replay and automated provider fixtures are simulated.
