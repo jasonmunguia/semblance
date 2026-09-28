@@ -10,14 +10,14 @@ Source: https://github.com/jasonmunguia/semblance
 - Vercel plan: Hobby. Neon resource: Free. Alchemy signup: Free; Base Mainnet enabled. Cloudflare Workers dashboard: Free ($0), current plan. No paid subscription or domain purchased.
 - Real Alchemy history and recent-range reads passed. These establish connectivity, not detection accuracy.
 - Hosted live collector returned HTTP 200, processed one test wallet, persisted its cursor and displayed stored transfers with `monitoring` status.
-- `uv run pytest -q`: 91 passed, exit 0.
+- `uv run pytest -q`: 92 passed, exit 0.
 - `npm --prefix frontend test`: 10 passed, exit 0.
 - `npm --prefix frontend run build`: exit 0.
 - `node --test scheduler/worker.test.mjs`: 2 passed, exit 0.
 - Scoped quality ratchet, Ruff, diff whitespace and staged secret checks: exit 0.
 - Full frontend npm audit: zero reported vulnerabilities.
 - Desktop/mobile browser checks: no page errors or horizontal overflow; example recipient warning works in a real browser.
-- GitHub Checks run 36375451960: success.
+- GitHub Checks run 36387317808 (coverage upgrade) and 36387591034 (initial cache regression): success.
 
 ## Scheduled monitoring verified
 
@@ -39,4 +39,10 @@ See [the reproducible real-Base case study](../evaluation/README.md). Two explor
 
 ## Coverage upgrade
 
-Local checks passed for the token-reference and outgoing-zero-event upgrade. Production rollout and hosted verification are pending.
+The coverage upgrade deployed successfully as `dpl_Di8jrYwSsXTLtuMPrvUsz8ur8HRr`. Live route checks and the recipient warning passed. A hosted collection completed in 3.12 seconds, processed one public wallet, persisted cursor 51894014, returned 200 stored transfers, and independently verified two direct token transfers. This is one observed run, not a latency guarantee.
+
+Browser verification exposed a separate deployment-cache issue: normalized file timestamps and equal HTML sizes let static-file validators return stale HTML referencing a removed asset. The entry page now returns an unconditional response with `Cache-Control: no-store`; a regression test changes the asset reference while preserving file size and timestamp. The final production deployment `dpl_GtksNxhSFvrnxcbguEuAozWppszL` returned READY. HTML validators were also removed because the hosting layer could otherwise issue a 304 despite the application returning 200. A real conditional request with the old validators now returns HTTP 200, `no-store`, and the current assets. Both referenced assets and health/demo/state routes returned 200. The previously blank tab rendered after a normal reload.
+
+Native Arc browser checks verified the example comparison warning, new outgoing-token alert detail, and the last incident replay step. The in-app browser rendered but its automation clicks were ineffective, so interaction verification used Arc. Visual evidence was saved locally at `/tmp/semblance-coverage-upgrade.png`.
+
+The unattended collector advanced the temporary wallet to block 51894127 at 2026-09-28 06:41:16 UTC, after the manual scan at 06:37:23. It remained in `monitoring` state without an error. The temporary watch was removed and empty state verified; pilot capacity was restored. All hosted verification commands returned exit 0 after correcting the checks to use the actual API response field names. No paid service was introduced.
