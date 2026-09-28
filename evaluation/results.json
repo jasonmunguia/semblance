@@ -1,0 +1,395 @@
+{
+  "checked_at": "2026-09-28T06:08:03.833039+00:00",
+  "chain_id": 8453,
+  "method": "Unmodified production scan_monitor, live historical RPC reads, isolated local SQLite, one-block scan",
+  "poisoning": [
+    {
+      "tx_hash": "0x52f0b91f44b70f090d6980fd5d74d09ce13bd3fac650cd67f15a4ab3cf077f78",
+      "block": 46217756,
+      "victim": "0x0b07f64abc342b68aec57c0936e4b6fd4452967e",
+      "label_source": "https://basescan.org/address/0xd9718744c3873a6ef315a03f4b8882e33f1b670d",
+      "label_quality": "Explorer-reported poisoning address; cases may share a campaign",
+      "reference_transfer": {
+        "tx_hash": "0x0b216abdb0f5f3f0c62d3ee9c954004efd52030eabf8c123310bfb9d2f332e55",
+        "block": 44023525,
+        "timestamp": "2026-03-30T02:06:37.000Z",
+        "from_address": "0x0b07f64abc342b68aec57c0936e4b6fd4452967e",
+        "to_address": "0xd97107064b8c7520aae6c6e6ca75bb2aa73b670d",
+        "value": "26",
+        "asset": "ETH",
+        "category": "external",
+        "token_address": null
+      },
+      "alerts": [
+        {
+          "kind": "lookalike",
+          "severity": "warning",
+          "title": "Possible lookalike address",
+          "explanation": "An incoming sender resembles an address this wallet previously sent funds to. This pattern can be used to poison transaction history; resemblance alone does not prove an attack.",
+          "action": "Do not copy this sender from transaction history. Verify the full recipient address independently.",
+          "evidence": {
+            "candidate": "0xd9718744c3873a6ef315a03f4b8882e33f1b670d",
+            "reference": "0xd97107064b8c7520aae6c6e6ca75bb2aa73b670d",
+            "reference_kind": "previous_recipient",
+            "matching_prefix": 4,
+            "matching_suffix": 5,
+            "differing_indices": [
+              6,
+              8,
+              9,
+              10,
+              11,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36
+            ]
+          },
+          "tx_hash": "0x52f0b91f44b70f090d6980fd5d74d09ce13bd3fac650cd67f15a4ab3cf077f78",
+          "block": 46217756,
+          "timestamp": "2026-05-19T21:07:39.000Z"
+        }
+      ],
+      "pre_send": "lookalike",
+      "exact_reference_control": "exact_match",
+      "dissimilar_address_control": "no_match",
+      "history_partial": true
+    },
+    {
+      "tx_hash": "0x999b0df035d3cad3695585bd009ffda8d6202d2eb549ad8ba5228cb1a4bcfc6e",
+      "block": 45826971,
+      "victim": "0x36326db584922c43269844a91923872d743dd2b6",
+      "label_source": "https://basescan.org/address/0xfcbf6311589262d16d06835a417665541f7ff863",
+      "label_quality": "Explorer-reported poisoning address; cases may share a campaign",
+      "reference_transfer": {
+        "tx_hash": "0xdb623a959e40c355c6dfe79552510715c8739ea337737b863711412b204ced95",
+        "block": 45822172,
+        "timestamp": "2026-05-10T17:21:31.000Z",
+        "from_address": "0x36326db584922c43269844a91923872d743dd2b6",
+        "to_address": "0xfcbf17200c64e860f6639aa12b525015d115f863",
+        "value": "0.000637928527006821",
+        "asset": "ETH",
+        "category": "external",
+        "token_address": null
+      },
+      "alerts": [
+        {
+          "kind": "lookalike",
+          "severity": "warning",
+          "title": "Possible lookalike address",
+          "explanation": "An incoming sender resembles an address this wallet previously sent funds to. This pattern can be used to poison transaction history; resemblance alone does not prove an attack.",
+          "action": "Do not copy this sender from transaction history. Verify the full recipient address independently.",
+          "evidence": {
+            "candidate": "0xfcbf6311589262d16d06835a417665541f7ff863",
+            "reference": "0xfcbf17200c64e860f6639aa12b525015d115f863",
+            "reference_kind": "previous_recipient",
+            "matching_prefix": 4,
+            "matching_suffix": 4,
+            "differing_indices": [
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37
+            ]
+          },
+          "tx_hash": "0x999b0df035d3cad3695585bd009ffda8d6202d2eb549ad8ba5228cb1a4bcfc6e",
+          "block": 45826971,
+          "timestamp": "2026-05-10T20:01:29.000Z"
+        }
+      ],
+      "pre_send": "lookalike",
+      "exact_reference_control": "exact_match",
+      "dissimilar_address_control": "no_match",
+      "history_partial": false
+    }
+  ],
+  "approvals": [
+    {
+      "kind": "finite",
+      "tx_hash": "0x7d6a80b836b63e2b740720d631f7a20233b380842b08bfc84185a8fd208c7f92",
+      "records": [
+        {
+          "event_id": "0x7d6a80b836b63e2b740720d631f7a20233b380842b08bfc84185a8fd208c7f92:187",
+          "tx_hash": "0x7d6a80b836b63e2b740720d631f7a20233b380842b08bfc84185a8fd208c7f92",
+          "block": 34903450,
+          "timestamp": null,
+          "owner": "0xbf44de8fc9eeeed8615b0b3bc095cb0ddef35e09",
+          "spender": "0xba12222222228d8ba445958a75a0704d566bf2c8",
+          "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "value": "7607609",
+          "allowance": "7607609",
+          "verification": "event_only"
+        }
+      ],
+      "alerts": [
+        null
+      ]
+    },
+    {
+      "kind": "zero",
+      "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+      "records": [
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:101",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+          "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "value": "0",
+          "allowance": "0",
+          "verification": "event_only"
+        },
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:102",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+          "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "value": "38418479",
+          "allowance": "38418479",
+          "verification": "event_only"
+        },
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:112",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+          "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "value": "0",
+          "allowance": "0",
+          "verification": "event_only"
+        },
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:113",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x827922686190790b37229fd06084350e74485b72",
+          "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "value": "0",
+          "allowance": "0",
+          "verification": "event_only"
+        },
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:114",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x827922686190790b37229fd06084350e74485b72",
+          "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "value": "36574719",
+          "allowance": "36574719",
+          "verification": "event_only"
+        },
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:115",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x827922686190790b37229fd06084350e74485b72",
+          "token": "0xbf927b841994731c573bdf09ceb0c6b0aa887cdd",
+          "value": "0",
+          "allowance": "0",
+          "verification": "event_only"
+        },
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:116",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x827922686190790b37229fd06084350e74485b72",
+          "token": "0xbf927b841994731c573bdf09ceb0c6b0aa887cdd",
+          "value": "594282793865225883565",
+          "allowance": "594282793865225883565",
+          "verification": "event_only"
+        },
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:119",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x827922686190790b37229fd06084350e74485b72",
+          "token": "0xbf927b841994731c573bdf09ceb0c6b0aa887cdd",
+          "value": "18300679522772335784",
+          "allowance": "18300679522772335784",
+          "verification": "event_only"
+        },
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:123",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x827922686190790b37229fd06084350e74485b72",
+          "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "value": "0",
+          "allowance": "0",
+          "verification": "event_only"
+        },
+        {
+          "event_id": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411:124",
+          "tx_hash": "0x5058dbc91f7221ac62a5e2f83216fcf6ba7523730c19022bfefa618624274411",
+          "block": 34903452,
+          "timestamp": null,
+          "owner": "0xfce314e765ef7b787355c385b5586031320c165d",
+          "spender": "0x827922686190790b37229fd06084350e74485b72",
+          "token": "0xbf927b841994731c573bdf09ceb0c6b0aa887cdd",
+          "value": "0",
+          "allowance": "0",
+          "verification": "event_only"
+        }
+      ],
+      "alerts": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "kind": "unlimited",
+      "tx_hash": "0xc59b414c60c3dd75af774174460652eb66e08c90da52e00990a4d7ffefd49fc3",
+      "records": [
+        {
+          "event_id": "0xc59b414c60c3dd75af774174460652eb66e08c90da52e00990a4d7ffefd49fc3:12",
+          "tx_hash": "0xc59b414c60c3dd75af774174460652eb66e08c90da52e00990a4d7ffefd49fc3",
+          "block": 34903454,
+          "timestamp": null,
+          "owner": "0xe751d56c31dc1b16595a2cdfc94388687e26a674",
+          "spender": "0x0000000000001ff3684f28c67538d4d072c22734",
+          "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "value": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+          "allowance": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+          "verification": "verified"
+        }
+      ],
+      "alerts": [
+        {
+          "kind": "unlimited_approval",
+          "severity": "warning",
+          "title": "Unlimited spending approval",
+          "explanation": "A token approval event requested the maximum spending allowance. The token contract reported that allowance at the observed block. Unlimited approval can be intentional; it is exposure to review, not proof of fraud.",
+          "action": "Check whether you recognize the spender. Review current permissions in your wallet; Semblance cannot revoke them.",
+          "evidence": {
+            "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "spender": "0x0000000000001ff3684f28c67538d4d072c22734",
+            "allowance": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+            "event_value": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+            "verification": "verified",
+            "observed_block": 34903454
+          }
+        }
+      ]
+    }
+  ],
+  "coverage_probe": {
+    "tx_hash": "0x5a9e9c1e9de7e265c6ba561867657e2e23a7026ebe9f4516b30b4e3737b7acdb",
+    "block": 32632637,
+    "transaction_sender": "0xaea174f87e0222701cf9962d0b29ab9b2e7d4110",
+    "label_quality": "Unlabeled real outgoing zero-value/lookalike pattern, not a confirmed scam",
+    "events": [
+      {
+        "tx_hash": "0x5a9e9c1e9de7e265c6ba561867657e2e23a7026ebe9f4516b30b4e3737b7acdb",
+        "block": 32632637,
+        "timestamp": "2025-07-09T09:50:21.000Z",
+        "from_address": "0x0b07f64abc342b68aec57c0936e4b6fd4452967e",
+        "to_address": "0xd97129a3136f52558f638e01ce4a3d00ec97670d",
+        "value": "325965.813769",
+        "asset": "U\u0405D\u0421",
+        "category": "erc20",
+        "token_address": "0x1619d964cf6904eac8979464d99d92bedd6e4435"
+      },
+      {
+        "tx_hash": "0x5a9e9c1e9de7e265c6ba561867657e2e23a7026ebe9f4516b30b4e3737b7acdb",
+        "block": 32632637,
+        "timestamp": "2025-07-09T09:50:21.000Z",
+        "from_address": "0x0b07f64abc342b68aec57c0936e4b6fd4452967e",
+        "to_address": "0xd97129a3136f52558f638e01ce4a3d00ec97670d",
+        "value": "0",
+        "asset": "USDC",
+        "category": "erc20",
+        "token_address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+      }
+    ],
+    "alerts": [],
+    "earlier_native_reference": null,
+    "earlier_token_reference": {
+      "tx_hash": "0x9600fb0421f1fb7d5df035fba0a6c45d8fa30e1d96bcfd43da45f5cc498e67b8",
+      "block": 32632609,
+      "timestamp": "2025-07-09T09:49:25.000Z",
+      "from_address": "0x0b07f64abc342b68aec57c0936e4b6fd4452967e",
+      "to_address": "0xd97107064b8c7520aae6c6e6ca75bb2aa73b670d",
+      "value": "325965.813769",
+      "asset": "USDC",
+      "category": "erc20",
+      "token_address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+    },
+    "reference_transaction_sender": "0x0b07f64abc342b68aec57c0936e4b6fd4452967e",
+    "limitation": "Two exclusions: outgoing token-event recipients are not checked, and no eligible prior native reference was present in fetched history"
+  }
+}

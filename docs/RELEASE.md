@@ -32,3 +32,7 @@ The five-minute schedule is active. This verifies one real unattended cycle, not
 Three unique monitored wallets across the installation, three per browser session. Five-minute target schedule, with provider and safe-block delay. Free-tier quotas can pause operation. Anonymous sessions are browser-specific; clearing the cookie loses access. PostgreSQL transaction locks serialize collector work and quota changes, but full load/concurrency testing is not claimed. In-memory rate limiting is per process and must be replaced before wider deployment.
 
 No precision/recall, latency guarantee, user adoption or prevented-loss metric is claimed. Incident replay and automated provider fixtures are simulated.
+
+## Historical detection validation
+
+See [the reproducible real-Base case study](../evaluation/README.md). Two explorer-labeled poisoning cases triggered collector alerts and pre-send warnings; real unlimited, finite, and zero USDC approvals behaved as expected. An outgoing zero-value lookalike event exposed an incoming-only monitoring coverage gap. This is not a representative accuracy benchmark, and no confirmed malicious approval was validated.
