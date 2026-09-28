@@ -9,7 +9,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from pydantic import BaseModel, Field
@@ -263,5 +263,12 @@ def create_app(settings: Settings | None = None):
 
     static = Path(__file__).resolve().parents[2] / "frontend" / "dist"
     if static.is_dir():
+        @app.get("/", include_in_schema=False)
+        @app.get("/index.html", include_in_schema=False)
+        def website_index():
+            # Deployment archives normalize mtimes; size-based static ETags can
+            # otherwise reuse HTML pointing to a previous build's missing assets.
+            return FileResponse(static / "index.html", headers={"Cache-Control": "no-store"})
+
         app.mount("/", StaticFiles(directory=static, html=True), name="website")
     return app

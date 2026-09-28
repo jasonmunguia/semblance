@@ -302,3 +302,28 @@ async def test_one_wallet_timeout_does_not_starve_other_wallet(storage, settings
         later = db.get(Monitor, OTHER)
         assert slow.cursor is None and slow.status == "error"
         assert later.cursor == 100 and later.status == "monitoring"
+
+
+def test_index_reloads_after_same_size_deployment(settings, tmp_path, monkeypatch):
+    import os
+    import semblance.api as api
+
+    monkeypatch.setattr(api, "__file__", str(tmp_path / "backend/semblance/api.py"))
+    static = tmp_path / "frontend/dist"
+    static.mkdir(parents=True)
+    index = static / "index.html"
+    index.write_text('<script src="/assets/old.js"></script>')
+    os.utime(index, (1540000000, 1540000000))
+    with TestClient(create_app(settings)) as client:
+        old = client.get("/")
+        assert old.status_code == 200
+        index.write_text('<script src="/assets/new.js"></script>')
+        os.utime(index, (1540000000, 1540000000))
+        for route in ("/", "/index.html"):
+            response = client.get(route, headers={
+                "If-None-Match": old.headers["etag"],
+                "If-Modified-Since": old.headers["last-modified"],
+            })
+            assert response.status_code == 200
+            assert response.headers["cache-control"] == "no-store"
+            assert "/assets/new.js" in response.text
