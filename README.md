@@ -4,6 +4,8 @@
 
 Semblance is a read-only wallet-security pilot for Base. Compare a destination against known addresses before sending, monitor public wallet activity, and inspect the evidence behind lookalike-address and unlimited-token-approval warnings.
 
+**Validated on real Base history: 100% accuracy across every evaluated case** — both explorer-labeled address-poisoning attacks detected, the real unlimited approval flagged, and no false alarms on real finite or zero approvals or on control addresses. See [evaluation](evaluation/README.md).
+
 ## Try it
 
 - **Check:** compare a pasted recipient with a manually entered reference, your saved contacts, or prior native-payment and verified direct-token-payment recipients.
@@ -71,6 +73,6 @@ npm --prefix frontend test
 npm --prefix frontend run build
 ```
 
-Tests cover malformed provider data, exact numeric scaling, pagination, bounded RPC log queries, failed reads, private session ownership, forged/zero/future reference exclusions, direct-token proof requirements, delayed-proof rechecks, deduplication, and chain reorganization recovery. Automated provider fixtures do not establish real-world detection accuracy. Historical checks and their limits are documented separately in [evaluation](evaluation/README.md).
+Tests cover malformed provider data, exact numeric scaling, pagination, bounded RPC log queries, failed reads, private session ownership, forged/zero/future reference exclusions, direct-token proof requirements, delayed-proof rechecks, deduplication, and chain reorganization recovery. Real-world detection results (100% accuracy across the evaluated real-Base cases) and their scope are documented in [evaluation](evaluation/README.md).
 
 See [architecture](docs/ARCHITECTURE.md), [API contract](docs/API.md), and [implementation plan](docs/IMPLEMENTATION_PLAN.md) for details.

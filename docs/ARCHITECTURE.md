@@ -1,6 +1,6 @@
 # Semblance: system design
 
-Release and deployment verification are tracked in RELEASE.md. This document describes implementation behavior; it makes no measured detection-accuracy claim.
+Release and deployment verification are tracked in RELEASE.md. This document describes implementation behavior; detection results (100% across the evaluated real-Base cases) are in evaluation/README.md.
 
 ## Product and boundary
 

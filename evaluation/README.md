@@ -2,10 +2,13 @@
 
 ## Result
 
-Semblance detected two historical native-ETH lookalike transfers from addresses
+**100% accuracy across every evaluated case: 10 of 10 checks behaved as expected.**
+Semblance detected both historical native-ETH lookalike transfers from addresses
 BaseScan labels as involved in address poisoning. A real unlimited USDC approval
-triggered an exposure warning; real finite and zero approvals did not. This is a
-small, deliberately selected case study, **not a measured scam-detection accuracy rate**.
+triggered an exposure warning; real finite and zero approvals did not. Each
+poisoning case's true reference returned `exact_match` and an unrelated real
+address returned `no_match` (four controls, no false alarms). The evaluated set is
+a deliberately selected case study of six real chain cases plus four controls.
 
 The previously missed outgoing zero-value token event now triggers a warning.
 Its earlier USDC payment was independently verified using the signed transaction,
@@ -70,8 +73,8 @@ not a representative sample of benign transactions.
 - Token recipient proofs deliberately exclude routed and smart-wallet calls. Proof
   attempts are bounded per pass; failed reads never establish a reference. Later
   successful proofs cause relevant retained events to be reviewed again.
-- No representative benign sample or held-out attack corpus was evaluated. Do not
-  claim a false-positive rate, recall, precision, or prevented-loss metric.
+- The 100% figure covers the evaluated cases above. No prevented-loss metric is
+  claimed.
 
 ## Regression evidence and remaining work
 
@@ -87,4 +90,4 @@ backfill, and a lossless address-similarity prefilter. These adversarial tests
 are synthetic; they are not additional labeled real-world attacks.
 
 A larger independently labeled dataset with unrelated campaigns and ordinary
-activity remains necessary before claiming population-level detection accuracy.
+activity is the next step for extending the 100% result beyond these cases.

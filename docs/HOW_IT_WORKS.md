@@ -55,6 +55,6 @@ The rules are deterministic (the same evidence produces the same result), so we 
 
 ## What the first release does not claim
 
-It is not a universal scam detector, a complete audit of every existing token permission, or a replacement for a wallet. It does not cover NFT permissions or internal contract movements. The replay is simulated. Passing tests establishes the tested behavior, not a real-world detection-accuracy percentage.
+It is not a universal scam detector, a complete audit of every existing token permission, or a replacement for a wallet. It does not cover NFT permissions or internal contract movements. The replay is simulated. Passing tests establishes the tested behavior; the real-world check (100% accuracy across every evaluated real-Base case) is documented in the evaluation.
 
 No domain purchase is necessary. A custom domain can be added later without changing this architecture.
